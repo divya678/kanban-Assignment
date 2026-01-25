@@ -14,40 +14,76 @@ interface ContextType {
 const AppContext = createContext<ContextType | undefined>(undefined);
 
 export const KanbanProvider = ({ children }: { children: ReactNode }) => {
+  const now = new Date().toISOString();
   const [columns, setColumns] = useState<ColumnsState>([
     {
       id: "todo",
       title: "Todo",
       color: "#4A90E2",
       cards: [
-        { id: "1", content: "Complete the Assignment" },
-        { id: "2", content: "Create documentation" },
+        {
+          id: "1",
+          content: "Complete the Assignment",
+          description: "Finish Kanban assignment",
+          status: "todo",
+          createdAt: now,
+        },
+        {
+          id: "2",
+          content: "Create documentation",
+          description: "",
+          status: "todo",
+          createdAt: now,
+        },
       ],
     },
     {
       id: "in-progress",
       title: "In Progress",
       color: "#F5A623",
-      cards: [{ id: "3", content: "Requirement Gathering" }],
+      cards: [
+        {
+          id: "3",
+          content: "Requirement Gathering",
+          description: "Discuss with stakeholders",
+          status: "in-progress",
+          createdAt: now,
+        },
+      ],
     },
     {
       id: "done",
       title: "Done",
       color: "#7ED321",
       cards: [
-        { id: "5", content: "Create Sample Doc" },
-        { id: "6", content: "Create Jira task" },
+        {
+          id: "5",
+          content: "Create Sample Doc",
+          description: "",
+          status: "done",
+          createdAt: now,
+        },
       ],
     },
   ]);
 
   const addCard = (columnId: string, content: string) => {
     if (!content.trim()) return;
-    const newCard: Card = { id: Date.now().toString(), content };
+
+    const now = new Date().toISOString();
+
+    const newCard: Card = {
+      id: Date.now().toString(),
+      content,
+      description: "",
+      status: columnId,
+      createdAt: now,
+    };
+
     setColumns((prev) =>
       prev.map((col) =>
-        col.id === columnId ? { ...col, cards: [...col.cards, newCard] } : col
-      )
+        col.id === columnId ? { ...col, cards: [...col.cards, newCard] } : col,
+      ),
     );
   };
 
@@ -56,36 +92,36 @@ export const KanbanProvider = ({ children }: { children: ReactNode }) => {
       prev.map((col) =>
         col.id === columnId
           ? { ...col, cards: col.cards.filter((c) => c.id !== cardId) }
-          : col
-      )
+          : col,
+      ),
     );
   };
 
   const updateCard = (columnId: string, cardId: string, content: string) => {
     if (!content.trim()) return;
+
     setColumns((prev) =>
       prev.map((col) =>
         col.id === columnId
           ? {
               ...col,
               cards: col.cards.map((c) =>
-                c.id === cardId ? { ...c, content } : c
+                c.id === cardId
+                  ? {
+                      ...c,
+                      content,
+                    }
+                  : c,
               ),
             }
-          : col
-      )
+          : col,
+      ),
     );
   };
 
   const moveCard = (result: DropResult) => {
     const { destination, source } = result;
-
     if (!destination) return;
-    if (
-      destination.droppableId === source.droppableId &&
-      destination.index === source.index
-    )
-      return;
 
     setColumns((prev) => {
       const newColumns = prev.map((col) => ({
@@ -93,15 +129,15 @@ export const KanbanProvider = ({ children }: { children: ReactNode }) => {
         cards: [...col.cards],
       }));
 
-      const sourceCol = newColumns.find(
-        (c) => c.id.toString() === source.droppableId
-      )!;
-      const destCol = newColumns.find(
-        (c) => c.id.toString() === destination.droppableId
-      )!;
+      const sourceCol = newColumns.find((c) => c.id === source.droppableId)!;
+      const destCol = newColumns.find((c) => c.id === destination.droppableId)!;
 
       const [movedCard] = sourceCol.cards.splice(source.index, 1);
-      destCol.cards.splice(destination.index, 0, movedCard);
+
+      destCol.cards.splice(destination.index, 0, {
+        ...movedCard,
+        status: destCol.id,
+      });
 
       return newColumns;
     });

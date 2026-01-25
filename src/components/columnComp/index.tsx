@@ -4,6 +4,7 @@ import { AddCardForm } from "../cardComp/addcardform";
 import { useAppContext } from "../../context";
 import type { Column as ColumnType } from "../../type";
 import { useState } from "react";
+import DateFilter from "../card-filter";
 
 interface ColumnProps {
   column: ColumnType;
@@ -12,18 +13,18 @@ interface ColumnProps {
 export const Column = ({ column }: ColumnProps) => {
   const { addCard, deleteCard, updateCard } = useAppContext();
   const [isOpen, setIsOpen] = useState(false);
+  const [filterDate, setFilterDate] = useState<Date | null>(null);
 
   return (
     <div className="kanban-column">
       <div className="column-header" style={{ backgroundColor: column.color }}>
+        <span>{column.title}</span>
         <span>
-          {column.title}
-          {column.cards.length > 0 ? ` (${column.cards.length})` : ""}
+          {" "}
+          {column.cards.length > 0 ? ` ${column.cards.length} Total` : ""}
         </span>
-        <button className="header-add-btn" onClick={() => setIsOpen(true)}>
-          +
-        </button>
       </div>
+      <DateFilter value={filterDate} onChange={setFilterDate} />
       <AddCardForm
         onAdd={(content: string) => addCard(column.id, content)}
         isOpen={isOpen}
@@ -44,6 +45,7 @@ export const Column = ({ column }: ColumnProps) => {
                 columnId={column?.id}
                 onDelete={deleteCard}
                 onUpdate={updateCard}
+                color={column.color}
               />
             ))}
             {provided.placeholder}

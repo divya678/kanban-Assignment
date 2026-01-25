@@ -20,7 +20,7 @@ export const AddCardForm = ({ onAdd, isOpen, setIsOpen }: AddCardFormProps) => {
   if (!isOpen) {
     return (
       <button className="add-card-btn" onClick={() => setIsOpen(true)}>
-        + Add Card
+        + Add Task
       </button>
     );
   }
